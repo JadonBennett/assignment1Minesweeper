@@ -1,175 +1,176 @@
-
-/*
-* ALL JAVADOC COMMENTS AUTOMATICALLY GENERATED WITH USE OF AI, with a little bit of edits from yours truly.
- Minesweeper Solving Algorithm
- TCSS 360 Software Engineering
- Summer 2026
- */
-import java.io.File;
-import java.io.FileNotFoundException;
 import java.util.Scanner;
 
 /**
- * This minesweeper algorithm reads at least one minsweeper fields from
- * System.in or
- * command line argument source and prints each field with the number of
- * adjacent mines to
- * that field so we can more easily find where the mines may be hiding.
- * 
- * @author: Nick Humeniuk Sandberg
- * @version: July 03, 2026
+ * TCSS 360 - Assignment 1: Minesweeper
+ * Reads an unknown number of minesweeper fields and
+ * prints each field with the number of mines near the cell
+ *
+ * @author Jadon Bennett
+ * @version 1
  */
-
-public final class Minesweeper {
-
-    private static final char MINE = '*';
+public class Minesweeper
+{
+    /** Character representing a mine in the input and output. */
+    private static final char MINE_CHAR = '*';
 
     /**
-     * Program entry point. Reads input either from a file specified as a single
-     * command-line
-     * argument or from standard input. The input consists of one or more
-     * Minesweeper fields.
-     * Each field begins with two integers n and m (rows and columns). A pair of
-     * zeros (0 0)
-     * terminates the input. For each field the program reads the board and prints
-     * the field
-     * with numbers indicating how many adjacent mines each non-mine cell has.
+     * Reads fields from input until the terminator is found,
+     * solves each one, then prints it.
      *
-     * @param theArgs command-line arguments; if one argument is provided it is
-     *                treated as the
-     *                path to an input file to read instead of System.in
-     * @throws FileNotFoundException if the file specified in theArgs[0] cannot be
-     *                               opened
      */
-    public static void main(final String theArgs[]) {
+    public static void main(final String[] theArgs)
+    {
+        final Scanner scanner = new Scanner(System.in);
+        int fieldNumber = 0;
 
-        final Scanner scan;
+        while (scanner.hasNextInt())
+        {
+            final int n = scanner.nextInt();
+            final int m = scanner.nextInt();
+            scanner.nextLine();
 
-        try {
-            if (theArgs.length == 1) {
-                scan = new Scanner(new File(theArgs[0]));
-            } else {
-                scan = new Scanner(System.in);
-            }
-        } catch (FileNotFoundException e) {
-            System.err.println("File not found: " + theArgs[0]);
-            return;
-        }
-
-        int fieldCounter = 1;
-        while (scan.hasNextLine()) {
-            final int n = scan.nextInt();
-            final int m = scan.nextInt();
-
-            if (n == 0 && m == 0) {
+            if (n == 0 && m == 0)
+            {
                 break;
             }
-            scan.nextLine();
 
-            gameBoard(scan, n, m, fieldCounter);
-            fieldCounter = fieldCounter + 1;
-        }
-        scan.close();
-    }
+            final String[] lines = new String[n];
+            for (int row = 0; row < n; row++)
+            {
+                lines[row] = scanner.nextLine();
+            }
 
-    /**
-     * Reads a Minesweeper board from the provided Scanner. The method expects
-     * exactly n lines
-     * to follow in the scanner, each containing m characters representing the board
-     * row.
-     * Each character is copied into a newly allocated 2D char array which is
-     * returned.
-     *
-     * @param theScan the Scanner to read board lines from; must be positioned at
-     *                the first board line
-     * @param n       number of rows to read
-     * @param m       number of columns per row to read
-     * @return a 2D char array of size n by m containing the board characters
-     */
-    private static char[][] readBoard(final Scanner theScan, final int n, final int m) {
+            final char[][] grid = constructGrid(lines, n, m);
+            fieldNumber++;
+            final int[][] counts = countAdjacentMines(grid, n, m);
+            final char[][] solved = buildOutputGrid(grid, counts, n, m);
 
-        final char[][] board = new char[n][m];
+            if (fieldNumber > 1)
+            {
+                System.out.println();
+            }
 
-        for (int i = 0; i < n; i++) {
-            String line = theScan.nextLine();
-            for (int j = 0; j < m; j++) {
-                board[i][j] = line.charAt(j);
+            System.out.println("Field #" + fieldNumber + ":");
+            for (int row = 0; row < n; row++)
+            {
+                System.out.println(new String(solved[row]));
             }
         }
-        return board;
     }
 
     /**
-     * Processes a single Minesweeper field: reads the board from the scanner,
-     * prints the
-     * field header "Field #X:" and then prints the board where each mine ('*') is
-     * printed
-     * unchanged and each non-mine cell is replaced by the count of adjacent mines.
+     * turns grid lines into a 2D array.
      *
-     * @param theScan         the Scanner to read the board from
-     * @param n               number of rows in the board
-     * @param m               number of columns in the board
-     * @param theFieldCounter the sequential field number used in the printed header
+     * @param theLines the String line of characters
+     * @param theRows number of rows
+     * @param theCols number of columns
+     * @return a 2D char array of size theRows by theCols
      */
-    private static void gameBoard(final Scanner theScan, final int n, final int m, final int theFieldCounter) {
+    static char[][] constructGrid(final String[] theLines, final int theRows, final int theCols)
+    {
+        final char[][] grid = new char[theRows][theCols];
 
-        System.out.println("Field #" + theFieldCounter + ":");
-        final char[][] board = readBoard(theScan, n, m);
+        for (int row = 0; row < theRows; row++)
+        {
+            for (int col = 0; col < theCols; col++)
+            {
+                grid[row][col] = theLines[row].charAt(col);
+            }
+        }
 
-        for (int i = 0; i < board.length; i++) {
-            for (int j = 0; j < board[i].length; j++) {
-                if (board[i][j] == MINE) {
-                    System.out.print(board[i][j]);
-                } else {
-                    System.out.print(neighbors(board, i, j));
+        return grid;
+    }
+
+    /**
+     * Compute the number of adjacent mines for every square in the grid.
+     *
+     * @param theGrid the original field
+     * @param theRows number of rows
+     * @param theCols number of columns
+     * @return a 2D int array where each cell holds the count of mines in
+     *         the up-to-8 squares surrounding that position
+     */
+    static int[][] countAdjacentMines(final char[][] theGrid, final int theRows, final int theCols)
+    {
+        final int[][] counts = new int[theRows][theCols];
+
+        for (int row = 0; row < theRows; row++)
+        {
+            for (int col = 0; col < theCols; col++)
+            {
+                if (theGrid[row][col] == MINE_CHAR)
+                {
+                    addMineToNeighbors(counts, row, col, theRows, theCols);
                 }
             }
-            System.out.println();
         }
-        System.out.println();
+
+        return counts;
     }
 
     /**
-     * Counts the number of mines adjacent to the specified cell in theBoard.
-     * Adjacent cells
-     * include the eight surrounding positions (horizontal, vertical, and diagonal)
-     * when they
-     * exist within the board bounds.
+     * Increment the count for every valid neighbor of a mine.
      *
-     * @param theBoard  the Minesweeper board as a 2D char array
-     * @param theRow    the row index of the cell to inspect
-     * @param theColumn the column index of the cell to inspect
-     * @return the number of adjacent cells that contain a mine character ('*')
+     * @param theCounts the 2D int array being accumulated, modified in place
+     * @param theRow row index of the mine
+     * @param theCol column index of the mine
+     * @param theRows number of rows in the grid
+     * @param theCols number of columns in the grid
      */
-    private static int neighbors(final char[][] theBoard, final int theRow, final int theColumn) {
+    static void addMineToNeighbors(final int[][] theCounts, final int theRow, final int theCol,
+                                   final int theRows, final int theCols)
+    {
+        for (int rowChange = -1; rowChange <= 1; rowChange++)
+        {
+            for (int colChange = -1; colChange <= 1; colChange++)
+            {
+                if (rowChange == 0 && colChange == 0)
+                {
+                    continue;
+                }
 
-        int nums = 0;
+                final int neighborRow = theRow + rowChange;
+                final int neighborCol = theCol + colChange;
 
-        if (theRow - 1 >= 0 && theBoard[theRow - 1][theColumn] == MINE) {
-            nums = nums + 1;
+                if (neighborRow >= 0 && neighborRow < theRows
+                        && neighborCol >= 0 && neighborCol < theCols)
+                {
+                    theCounts[neighborRow][neighborCol]++;
+                }
+            }
         }
-        if (theRow + 1 < theBoard.length && theBoard[theRow + 1][theColumn] == MINE) {
-            nums = nums + 1;
+    }
+
+    /**
+     * Build the printable representation of a populated field.
+     *
+     * @param theGrid the original field
+     * @param theCounts the grid with adjacency counts
+     * @param theRows number of rows
+     * @param theCols number of columns
+     * @return a 2D array with mines shown as '*' and safe squares
+     *         shown as their adjacency count
+     */
+    static char[][] buildOutputGrid(final char[][] theGrid, final int[][] theCounts,
+                                    final int theRows, final int theCols)
+    {
+        final char[][] output = new char[theRows][theCols];
+
+        for (int row = 0; row < theRows; row++)
+        {
+            for (int col = 0; col < theCols; col++)
+            {
+                if (theGrid[row][col] == MINE_CHAR)
+                {
+                    output[row][col] = MINE_CHAR;
+                }
+                else
+                {
+                    output[row][col] = Character.forDigit(theCounts[row][col], 10);
+                }
+            }
         }
-        if (theColumn - 1 >= 0 && theBoard[theRow][theColumn - 1] == MINE) {
-            nums = nums + 1;
-        }
-        if (theColumn + 1 < theBoard[theRow].length && theBoard[theRow][theColumn + 1] == MINE) {
-            nums = nums + 1;
-        }
-        if (theRow - 1 >= 0 && theColumn - 1 >= 0 && theBoard[theRow - 1][theColumn - 1] == MINE) {
-            nums = nums + 1;
-        }
-        if (theRow - 1 >= 0 && theColumn + 1 < theBoard[theRow].length && theBoard[theRow - 1][theColumn + 1] == MINE) {
-            nums = nums + 1;
-        }
-        if (theRow + 1 < theBoard.length && theColumn - 1 >= 0 && theBoard[theRow + 1][theColumn - 1] == MINE) {
-            nums = nums + 1;
-        }
-        if (theRow + 1 < theBoard.length && theColumn + 1 < theBoard[theRow].length
-                && theBoard[theRow + 1][theColumn + 1] == MINE) {
-            nums = nums + 1;
-        }
-        return nums;
+
+        return output;
     }
 }
