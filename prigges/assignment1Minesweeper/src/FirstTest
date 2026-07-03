@@ -1,0 +1,85 @@
+import java.util.Scanner;
+import java.io.File;
+import java.io.*;
+
+
+public class HintGenerator {
+    public static void main(String[] args){
+        // declares the scanner
+        final Scanner myInput = new Scanner(System.in);
+
+        // initializes the rows and cols for first grid. considering moving
+        // it to inside the while loop and using a .hasNext() instead
+        int myRows = myInput.nextInt();
+        int myCols = myInput.nextInt();
+        // Starts the fields counter
+        int myFields = 0;
+
+        // Loop to run the whole program, considering breaking the innards into methods
+        // within a class or within this class
+        while(myRows > 0 && myCols > 0){
+
+            // increments the fields loop
+            myFields++;
+            // creates the grid for this loop
+            final char[][] bombs = new char[myRows + 2][myCols +2];
+
+            //builds 2d array
+            for(int rows = 1; rows < myRows - 1; rows++){
+                String currentLine = myInput.next();
+                for(int cols = 1, i = 0; cols < myCols - 1; cols++, i++){
+                    bombs[rows][cols] = currentLine[i];
+                }
+            }
+
+            // generates hints
+            for(int rows = 1; rows < myRows - 1; rows++){
+                for(int cols = 1; cols < myCols - 1; cols++){
+                    if(bombs[rows][cols] != "*"){
+                        int hint = 0;
+
+                        // cant decide between using a loop or a bunch of ifs
+                        //for(int i = 0; i < 3; i++){
+                        //    for(int j = 0; j < 3; j++){
+                        //        if(bombs[rows - i][cols - j]){hint++;}}}
+
+                        // if statement version
+                        if(bombs[rows - 1][cols - 1] == "*"){hint++;}
+                        if(bombs[rows - 1][cols] == "*"){hint++;}
+                        if(bombs[rows - 1][cols + 1] == "*"){hint++;}
+                        if(bombs[rows][cols - 1] == "*"){hint++;}
+                        if(bombs[rows][cols + 1] == "*"){hint++;}
+                        if(bombs[rows + 1][cols - 1] == "*"){hint++;}
+                        if(bombs[rows + 1][cols] == "*"){hint++;}
+                        if(bombs[rows + 1][cols + 1] == "*"){hint++;}
+                        bombs[rows][cols] = Character.forDigit(hint, 10);
+                    }
+                }
+            }
+
+            // creates string builder to construct final output
+            final StringBuilder collector = new StringBuilder;
+            collector.append("Filed #").append(myFields).append(":\n\n");
+
+            // collects everything from grid into stringbuilder
+            for(int rows = 1; rows < myRows - 1; rows++){
+                for(int cols = 1; cols < myCols - 1; cols++){
+                    collector.append(bombs[rows][cols]);
+                }
+                collector.append("\n");
+            }
+
+            // Adds a new line for good measure
+            // collector.append("\n");
+            
+            // Should print to the .txt file
+            system.out.println(collector.toString());
+
+            //Sets up for next loop
+            myRows = myInput.next();
+            myCols = myInput.next();
+
+        }
+    }
+
+}
