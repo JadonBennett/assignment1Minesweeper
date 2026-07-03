@@ -1,3 +1,5 @@
+package src;
+
 import java.util.Scanner;
 
 /**
@@ -66,7 +68,7 @@ public class Minesweeper
      * @param theCols number of columns
      * @return a 2D char array of size theRows by theCols
      */
-    static char[][] constructGrid(final String[] theLines, final int theRows, final int theCols)
+    public static char[][] constructGrid(final String[] theLines, final int theRows, final int theCols)
     {
         final char[][] grid = new char[theRows][theCols];
 
@@ -90,7 +92,7 @@ public class Minesweeper
      * @return a 2D int array where each cell holds the count of mines in
      *         the up-to-8 squares surrounding that position
      */
-    static int[][] countAdjacentMines(final char[][] theGrid, final int theRows, final int theCols)
+    public static int[][] countAdjacentMines(final char[][] theGrid, final int theRows, final int theCols)
     {
         final int[][] counts = new int[theRows][theCols];
 
@@ -117,7 +119,7 @@ public class Minesweeper
      * @param theRows number of rows in the grid
      * @param theCols number of columns in the grid
      */
-    static void addMineToNeighbors(final int[][] theCounts, final int theRow, final int theCol,
+    public static void addMineToNeighbors(final int[][] theCounts, final int theRow, final int theCol,
                                    final int theRows, final int theCols)
     {
         for (int rowChange = -1; rowChange <= 1; rowChange++)
@@ -151,7 +153,7 @@ public class Minesweeper
      * @return a 2D array with mines shown as '*' and safe squares
      *         shown as their adjacency count
      */
-    static char[][] buildOutputGrid(final char[][] theGrid, final int[][] theCounts,
+    public static char[][] buildOutputGrid(final char[][] theGrid, final int[][] theCounts,
                                     final int theRows, final int theCols)
     {
         final char[][] output = new char[theRows][theCols];
