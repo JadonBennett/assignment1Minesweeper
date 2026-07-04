@@ -1,5 +1,4 @@
 // Author: Sean Prigge
-// IDE Used: VS Code
 
 import java.util.Scanner;
 
