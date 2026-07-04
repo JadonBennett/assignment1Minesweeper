@@ -1,16 +1,13 @@
 TCSS 360 - Group Assignment 1: Minesweeper
 
 TEAM MEMBERS:
-Jadon Bennett (bennettj)
-Sean Prigge (prigges)
-Joanna Duran (duranj)
-Nick Sandberg (iiSurf)
+Jadon Bennett
+Sean Prigge
+Joanna Duran
+Nick Sandberg
 
 IDE USED:
 IntelliJ IDEA
-VS Code - (prigges)
-Intellig- (duranj)
-vs code - (Nick)
 
 TIME ESTIMATE:
 Jadon Individual - 5 hours
